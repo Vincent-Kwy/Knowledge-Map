@@ -44,7 +44,7 @@ ui <- fluidPage(
     br(),
     tags$p(
       style = "font-weight: bold; font-size: 25px; margin-bottom: 10px;",
-      "Project Obejectives"
+      "Project Objectives"
     ),
     tags$p(
       style = "font-size: 20px;",
