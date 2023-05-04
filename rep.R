@@ -49,26 +49,35 @@ census_full1 <- rep_data %>%
 census_full1$census_tract_full <- paste(census_full1$state_fips, census_full1$county_fips,census_full1$census_tract, sep="")
 census_full1$census_block_full <- paste(census_full1$state_fips, census_full1$county_fips,census_full1$census_tract,census_full1$census_block, sep="")
 
+# Recode some data from the survey
+
 
 # Aggregate data by user selection in the APP with demographic variables to prepare for representiveness. The categories should match the survey we will use
-agg_tract <- census_full1  %>% 
-  group_by(census_tract_full) %>%
-  select(Gender:`Education Level`,census_tract_full) %>%
-  tbl_summary(
-    by = census_tract_full,
-    statistic = list(
-      all_continuous() ~ "{median} ({mean},{sd})"
-    )) 
-  
-agg_block <- census_full1  %>% 
-  group_by(census_block_full) %>%
-  select(Gender:`Education Level`,census_block_full) %>%
-  tbl_summary(
-    by = census_block_full,
-    statistic = list(
-      all_continuous() ~ "{median} ({mean},{sd})"
-    ))
+# agg_tract <- census_full1  %>% 
+#   group_by(census_tract_full) %>%
+#   select(Gender:`Education Level`,census_tract_full) %>%
+#   tbl_summary(
+#     by = census_tract_full,
+#     statistic = list(
+#       all_continuous() ~ "{median} ({mean},{sd})"
+#     )) 
+#   
+# agg_block <- census_full1  %>% 
+#   group_by(census_block_full) %>%
+#   select(Gender:`Education Level`,census_block_full) %>%
+#   tbl_summary(
+#     by = census_block_full,
+#     statistic = list(
+#       all_continuous() ~ "{median} ({mean},{sd})"
+#     ))
 
+# SUMMARIZE DATA FROM SELECTION
+survey_summary <- gather(census_full1,Object,census_block_full) %>%
+  group_by(census_block_full) %>%
+  mutate(n = n()) %>%
+  unique() %>%
+  filter(Object %in% c("Gender","Hipanic/Latino/Spanish Origin","Race / Ethnicity",
+                       "Year of Birth","Annual Household Income level","Education Level"))
 
 
 # CONVERT THE ABOVE RESULTS TO A DATAFRAME TO MERGE/COMPARE WITH ASC DATA
@@ -77,7 +86,6 @@ agg_block <- census_full1  %>%
 ######  GET ACS DATA, BUT NEED TO DECIDE ON VARIABLES TO EXTRACT. #####
 #######################################################################  
 
-
 # https://walker-data.com/tidycensus/articles/basic-usage.html
 # https://docs.google.com/document/d/1kr-1v03qlHZzEHIb0Uc507I0PtCVf1Gh9091lXtRVfI/edit 
 
@@ -85,22 +93,44 @@ agg_block <- census_full1  %>%
 wi_tracts_acs_raceeth <- get_acs(
     state = "WI",
     geography = "tract",
-    variables = c(hispanic.no = "B03001_002E")
+    variables = c(hispanic.no = "B03001_002E",
+                  mexican = "B03001_004E",
+                  puerto.rican = "B03001_005E",
+                  cuban = "B03001_006E",
+                  hispanic.yes = "B03001_003E",
+                  white = "B02001_002E",
+                  black = "B02001_003E",
+                  aian = "B02001_004E",
+                  asian = "B02001_005E",
+                  nhpi = "B02001_006E",
+                  mixed.race = "B02001_008E"
+                  ),
+    output = 'wide'
     )
 
-# GET BLOCK INFORMATION...BLOCK ONLY AVAILABLE WITH get_decennial()
-wi_block_acs_raceeth <- get_acs(
+wi_tracts_acs_gender <- get_acs(
   state = "WI",
-  geography = "cbg",
-  variables = c(hispanic.no = "B03001_002E")
+  geography = "tract",
+  variables = c(male = "S0101_C03_026E",
+                female = "S0101_C05_026E"
+  ),
+  output = 'wide'
 )
+
+# GET BLOCK INFORMATION...BLOCK ONLY AVAILABLE WITH get_decennial()
 
 
 # GET COUNTY INFORMATION
 wi_county_acs_raceeth <- get_acs(
   state = "WI",
   geography = "county",
-  variables = c(hispanic.no = "B03001_002E")
+  variables = c(hispanic.no = "B03001_002E",
+                mexican = "B03001_004E",
+                puerto.rican = "B03001_005E",
+                cuban = "B03001_006E",
+                hispanic.yes = "B03001_003E"
+  ),
+  output = 'wide'
 )
 #######################################################################  
 ##################  VISUAL Representativeness COMPARISON. #############
