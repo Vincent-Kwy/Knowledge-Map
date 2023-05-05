@@ -7,6 +7,7 @@ library(gtsummary)
 library(dplyr)
 
 options(tigris_use_cache = TRUE)
+census_api_key("087b597eb48c2a5edee92ce40fb7b889f0aa69ac", overwrite=TRUE) 
 
 # TIDYCENSUS: https://walker-data.com/tidycensus/index.html
 # CENSUS HELP: https://walker-data.com/census-r/index.html 
@@ -17,6 +18,16 @@ options(tigris_use_cache = TRUE)
 
 # Import dataframe from CCS platform
 data <- read_csv("~/Library/CloudStorage/Box-Box/ccs-knowledge/ccs-data/Urban Heat Survey.csv")
+
+### FOR APP
+#### CCS DATA
+##### ALLOW USERS TO CHOOSE ELEMENT 
+##### REQUIRE USERS TO CHOOSE QUESTION [SINGLE CHOICE]
+
+#### CENSUS DATA
+#### REQUIRE USERS TO SELECT COUNTY, TRACT, BLOCK
+#### POST LIST OF OPTION ABOVE AND ALLOW MULTUPLE SELECT OF OPTIONS (ONLY OPTIONS IN CCS)
+#### BUTTON CREATE REPORT
 
 
 # Extract name of object 
@@ -77,7 +88,7 @@ survey_summary <- gather(census_full1,Object,census_block_full) %>%
   mutate(n = n()) %>%
   unique() %>%
   filter(Object %in% c("Gender","Hipanic/Latino/Spanish Origin","Race / Ethnicity",
-                       "Year of Birth","Annual Household Income level","Education Level"))
+                       "Year of Birth","Annual Household Income level","Education Level","census_block_full"))
 
 
 # CONVERT THE ABOVE RESULTS TO A DATAFRAME TO MERGE/COMPARE WITH ASC DATA
